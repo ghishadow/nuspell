@@ -49,4 +49,4 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: nuspell
-        path: "D:\a\nuspell\nuspell\build\src\tools\Debug\nuspell.exe"
+        path: D:\a\nuspell\nuspell\build\src\tools\Debug\nuspell.exe
