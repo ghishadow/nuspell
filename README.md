@@ -25,7 +25,7 @@ Main features of Nuspell spelling checker:
 
 Build-only dependencies:
 
-  - C++ 17 compiler, GCC >= v8, Clang >= v7, MSVC >= 2017
+  - C++ 17 compiler with support for `std::filesystem`, e.g. GCC >= v9
   - CMake >= v3.8
   - Catch2 >= v2.3.0 (It is only needed when building the tests. If it is not
     available as a system package, the the Git submodule will be used.)
@@ -198,16 +198,21 @@ using namespace std;
 
 int main()
 {
-	auto dict_list = vector<pair<string, string>>();
-	nuspell::search_default_dirs_for_dicts(dict_list);
-	auto dict_name_and_path = nuspell::find_dictionary(dict_list, "en_US");
-	if (dict_name_and_path == end(dict_list))
+	auto dirs = vector<filesystem::path>();
+	nuspell::append_default_dir_paths(dirs);
+	auto dict_path = nuspell::search_dirs_for_one_dict(dirs, "en_US");
+	if (empty(dict_path))
 		return 1; // Return error because we can not find the requested
-		          // dictionary in the list.
-	auto& dict_path = dict_name_and_path->second;
+		          // dictionary.
 
-	auto dict = nuspell::Dictionary::load_from_path(dict_path);
-
+	auto dict = nuspell::Dictionary();
+	try {
+		dict.load_aff_dic(dict_path);
+	}
+	catch (const nuspell::Dictionary_Loading_Error& e) {
+		cerr << e.what() << '\n';
+		return 1;
+	}
 	auto word = string();
 	auto sugs = vector<string>();
 	while (cin >> word) {
